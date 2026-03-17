@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowEngine | Rule Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --danger: #ef4444;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; }
+
+        .sidebar { width: 260px; height: 100vh; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; }
+        .logo { padding: 2rem; display: flex; align-items: center; gap: 12px; font-size: 1.5rem; color: var(--primary); font-weight: 700; }
+        .nav-links { padding: 1rem; }
+        .nav-item { display: flex; align-items: center; padding: 0.8rem 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .nav-item i { width: 24px; margin-right: 10px; }
+
+        .main-content { margin-left: 260px; flex: 1; padding: 3rem; }
+
+        .rule-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .rule-header { padding: 1.5rem; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 1rem 1.5rem; color: var(--text-muted); font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+        td { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+
+        .priority-chip { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-dark); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; }
+        .condition-cell { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--primary); background: rgba(99, 102, 241, 0.05); padding: 8px 12px; border-radius: 6px; }
+        
+        .drag-handle { cursor: grab; color: var(--text-muted); margin-right: 10px; }
+        .drag-handle:active { cursor: grabbing; }
+
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-danger { color: var(--danger); background: transparent; }
+
+        .next-step-badge { background: var(--border); padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; }
+
+        /* Animation */
+        .rule-row { transition: var(--transition); }
+        .rule-row:hover { background: rgba(255,255,255,0.02); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-project-diagram"></i> <span>FlowEngine</span></div>
+        <nav class="nav-links">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="workflows.html" class="nav-item"><i class="fas fa-route"></i> Workflows</a>
+            <a href="editor.html" class="nav-item"><i class="fas fa-edit"></i> Editor</a>
+            <a href="tracking.html" class="nav-item"><i class="fas fa-satellite-dish"></i> Execution</a>
+            <a href="logs.html" class="nav-item"><i class="fas fa-terminal"></i> Logs</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1>Rule Editor</h1>
+                <p style="color: var(--text-muted);">Manage high-priority routing logic for <b>Customer Verification</b> workflow.</p>
+            </div>
+            <button class="btn btn-primary" onclick="addRule()"><i class="fas fa-plus"></i> Add New Rule</button>
+        </div>
+
+        <div class="rule-card">
+            <div class="rule-header">
+                <h3>Priority Routing Table</h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Rules are evaluated in order. First match wins.</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="80">Priority</th>
+                        <th>Condition (Javascript Expression)</th>
+                        <th>Next Step Target</th>
+                        <th width="150" style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="rule-list">
+                    <!-- Rule Rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+             <button class="btn btn-outline" onclick="location.href='editor.html'">Back to Editor</button>
+             <button class="btn btn-primary" onclick="alert('Rules Saved')">Save Rule Order</button>
+        </div>
+    </main>
+
+    <script>
+        let rules = [
+            { id: 1, priority: 1, condition: "input.amount > 10000 && input.tier === 'GOLD'", target: 'Compliance Review' },
+            { id: 2, priority: 2, condition: "input.risk_score > 0.5", target: 'Identity Verification' },
+            { id: 3, priority: 3, condition: "result.verified === false", target: 'Notify Rejection' },
+            { id: 4, priority: 4, condition: "true", target: 'Success Notification' }
+        ];
+
+        function renderRules() {
+            const list = document.getElementById('rule-list');
+            list.innerHTML = rules.map((r, index) => `
+                <tr class="rule-row">
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-grip-vertical drag-handle"></i>
+                            <div class="priority-chip">${r.priority}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="condition-cell">${r.condition}</span>
+                    </td>
+                    <td>
+                        <span class="next-step-badge"><i class="fas fa-level-up-alt fa-rotate-90" style="margin-right: 8px; color: var(--primary);"></i>${r.target}</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn btn-outline" style="padding: 0.4rem; border: none;"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger" style="padding: 0.4rem;" onclick="deleteRule(${r.id})"><i class="fas fa-trash-alt"></i></button>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <i class="fas fa-chevron-up" style="font-size: 0.7rem; cursor: pointer; color: var(--text-muted);" onclick="moveUp(${index})"></i>
+                                <i class="fas fa-chevron-down" style="font-size: 0.7rem; cursor: pointer; color: var(--text-muted);" onclick="moveDown(${index})"></i>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteRule(id) {
+            rules = rules.filter(r => r.id !== id);
+            renderRules();
+        }
+
+        function moveUp(index) {
+            if (index > 0) {
+                [rules[index], rules[index-1]] = [rules[index-1], rules[index]];
+                updatePriorities();
+                renderRules();
+            }
+        }
+
+        function moveDown(index) {
+            if (index < rules.length - 1) {
+                [rules[index], rules[index+1]] = [rules[index+1], rules[index]];
+                updatePriorities();
+                renderRules();
+            }
+        }
+
+        function updatePriorities() {
+            rules.forEach((r, i) => r.priority = i + 1);
+        }
+
+        function addRule() {
+            const newId = Date.now();
+            rules.push({ id: newId, priority: rules.length + 1, condition: "true", target: 'Select Step...' });
+            renderRules();
+        }
+
+        window.onload = renderRules;
+    </script>
+</body>
+</html>

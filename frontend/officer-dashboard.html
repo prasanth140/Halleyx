@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Officer | SmartPatta Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg: #0b0f19;
+            --sidebar: #111827;
+            --card: #1f2937;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; }
+
+        .sidebar { width: 260px; height: 100vh; background: var(--sidebar); border-right: 1px solid var(--border); position: fixed; display: flex; flex-direction: column; }
+        .logo { padding: 2.5rem; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .nav-links { flex: 1; padding: 1rem; }
+        .nav-item { display: flex; align-items: center; padding: 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .nav-item i { width: 30px; }
+
+        .main { margin-left: 260px; flex: 1; padding: 2.5rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+        .stat-box { background: var(--card); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); }
+        .stat-box h2 { font-size: 2rem; margin-top: 0.5rem; }
+        .stat-box p { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+
+        .dashboard-body { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; }
+        .list-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        .list-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        
+        .app-item { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-bottom: 1px solid var(--border); transition: 0.3s; cursor: pointer; }
+        .app-item:hover { background: rgba(255,255,255,0.02); }
+        .app-info { display: flex; gap: 1.5rem; align-items: center; }
+        .app-circle { width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+        .info-panel { background: var(--card); padding: 2rem; border-radius: 20px; border: 1px solid var(--border); position: sticky; top: 2.5rem; display: none; }
+        .panel-header { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+        
+        .field { margin-bottom: 1.2rem; }
+        .field label { display: block; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 4px; }
+        .field p { font-weight: 500; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 2rem; }
+        .btn { flex: 1; padding: 0.8rem; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-success { background: var(--primary); color: white; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .animate { animation: fadeInUp 0.5s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-landmark"></i> GovPortal 🧑‍💼</div>
+        <nav class="nav-links">
+            <a href="/officer-dashboard.html" class="nav-item active"><i class="fas fa-inbox"></i> Inbox</a>
+            <a href="/analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics</a>
+            <a href="/logs.html" class="nav-item"><i class="fas fa-history"></i> Audit Logs</a>
+            <a href="/admin-editor.html" class="nav-item"><i class="fas fa-cogs"></i> Design Flow</a>
+            <a href="#" class="nav-item" id="logoutBtn" style="margin-top: 15rem; border-top: 1px solid var(--border);"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </nav>
+    </aside>
+
+    <main class="main animate">
+        <div class="header">
+            <div>
+                <p style="color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem;">VAO Section — Tamil Nadu Revenue</p>
+                <h1 id="welcomeUser">Officer Inbox 🧑‍💼</h1>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" placeholder="Search Application..." style="background: var(--card); border: 1px solid var(--border); padding: 0.7rem 1.5rem; border-radius: 30px; color: white;">
+            </div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-box">
+                <p>New (Pending)</p>
+                <h2 id="statPending" style="color: var(--danger);">--</h2>
+            </div>
+            <div class="stat-box">
+                <p>Survey Stage</p>
+                <h2 id="statSurvey" style="color: #6366f1;">--</h2>
+            </div>
+            <div class="stat-box">
+                <p>Resolved</p>
+                <h2 id="statResolved" style="color: var(--primary);">--</h2>
+            </div>
+            <div class="stat-box">
+                <p>Total Files</p>
+                <h2 id="statTotal">--</h2>
+            </div>
+        </div>
+
+        <div class="dashboard-body">
+            <div class="list-card">
+                <div class="list-header">
+                    <h3>Review Queue</h3>
+                </div>
+                <div id="queue-list">
+
+                <div class="app-item" onclick="showPanel('APP-551', 'M. Prasanth', 'Aruppukottai', '4.5ac', '201/2A')">
+                    <div class="app-info">
+                        <div class="app-circle"><i class="fas fa-user"></i></div>
+                        <div>
+                            <h4><b>APP-551</b> — M. Prasanth</h4>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">Submitted 4 hours ago • Survey No: 201/2A</p>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.7rem; background: var(--border); padding: 4px 10px; border-radius: 4px;">PRIORITY</span>
+                </div>
+
+                <div class="app-item" onclick="showPanel('APP-552', 'S. Ramesh', 'Sattur', '1.2ac', '105/1')">
+                    <div class="app-info">
+                        <div class="app-circle"><i class="fas fa-user"></i></div>
+                        <div>
+                            <h4><b>APP-552</b> — S. Ramesh</h4>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">Submitted 1 day ago • Survey No: 105/1</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Panel -->
+            <div class="info-panel animate" id="detailsPanel">
+                <div class="panel-header">
+                    <h2 id="pID">APP-551</h2>
+                    <i class="fas fa-times" style="cursor: pointer;" onclick="hidePanel()"></i>
+                </div>
+                <div class="field"><label>Citizen</label><p id="pName">M. Prasanth</p></div>
+                <div class="field"><label>Location</label><p><b id="pVillage">Aruppukottai</b> • <span id="pSurvey">201/2A</span></p></div>
+                <div class="field"><label>Land Area</label><p id="pArea">4.5 Acres</p></div>
+                
+                <div class="field">
+                    <label>Official Document Proof</label>
+                    <div style="padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-file-pdf" style="color: #ef4444;"></i>
+                        <span id="pDoc">Standard_Deed.pdf</span>
+                        <a href="#" style="margin-left: auto; color: var(--primary); font-size: 0.8rem;">Preview <i class="fas fa-external-link-alt"></i></a>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Officer's Decision Remark</label>
+                    <textarea id="officerRemark" placeholder="Field verification notes..." style="width:100%; height:80px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:white; padding:10px;"></textarea>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-danger" onclick="alert('Sent for clarification')">Reject</button>
+                    <button class="btn btn-success" onclick="approveCurrent()">Approve</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Auth Protection
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (!token || role !== 'officer') {
+            window.location.href = '/login.html';
+        }
+
+        document.getElementById('welcomeUser').innerText = `Welcome, ${localStorage.getItem('name') || 'Officer'}`;
+
+        document.getElementById('logoutBtn').onclick = (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/login.html';
+        };
+
+        const API_URL = '/api';
+        let currentAppId = null;
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/stats`);
+                const stats = await res.json();
+                document.getElementById('statPending').innerText = stats.pending || '0';
+                document.getElementById('statSurvey').innerText = stats.survey || '0';
+                document.getElementById('statResolved').innerText = stats.completed || '0';
+                document.getElementById('statTotal').innerText = stats.total || '0';
+            } catch (err) { console.log('Stats error'); }
+        }
+
+        async function loadQueue() {
+            loadStats(); // Refresh stats whenever queue is loaded
+            try {
+                const res = await fetch(`${API_URL}/applications`);
+                const apps = await res.json();
+                const queue = document.getElementById('queue-list');
+                
+                // Show all that aren't completed yet
+                const pendingApps = apps.filter(a => a.status !== 'completed');
+
+                if (pendingApps.length > 0) {
+                    queue.innerHTML = pendingApps.map(app => `
+                        <div class="app-item" onclick="showPanel('${app._id}', 'Citizen', '${app.village}', '${app.land_area} ${app.land_unit}', '${app.survey_number}', '${app.document_name || "Official_Proof.pdf"}')">
+                            <div class="app-info">
+                                <div class="app-circle"><i class="fas fa-file-invoice"></i></div>
+                                <div>
+                                    <h4><b>#${app._id.slice(-6)}</b> — Survey ${app.survey_number}</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.8rem;">Status: ${app.status.toUpperCase()} • ${app.village}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    queue.innerHTML = '<div style="padding:4rem; text-align:center; color:var(--text-muted);">No items in queue</div>';
+                }
+            } catch (err) { console.log('Fetch error'); }
+        }
+
+        function showPanel(id, name, village, area, survey, doc) {
+            currentAppId = id;
+            document.getElementById('detailsPanel').style.display = 'block';
+            document.getElementById('pID').innerText = `#${id.slice(-6)}`;
+            document.getElementById('pName').innerText = name;
+            document.getElementById('pVillage').innerText = village;
+            document.getElementById('pArea').innerText = area;
+            document.getElementById('pSurvey').innerText = survey;
+            document.getElementById('pDoc').innerText = doc;
+        }
+
+        async function approveCurrent() {
+            if(!currentAppId) return;
+            const remark = document.getElementById('officerRemark').value;
+            const officerName = localStorage.getItem('name') || "Official Officer";
+
+            try {
+                const res = await fetch(`${API_URL}/applications/${currentAppId}/approve`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ remarks: remark, officer_name: officerName })
+                });
+                if (res.ok) {
+                    alert('Decision recorded. Logic engine processed the status update.');
+                    hidePanel();
+                    loadQueue();
+                }
+            } catch (err) { alert('Approval failed'); }
+        }
+
+        function hidePanel() { document.getElementById('detailsPanel').style.display = 'none'; }
+        
+        window.onload = loadQueue;
+    </script>
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "hackathon-siet",
+  "version": "1.0.0",
+  "description": "Many rural citizens face difficulties in obtaining land ownership documents such as **Patta**. The current process usually requires multiple visits to government offices like the **Village Administrative Officer (VAO)**, **Survey Department**, and **Tahsildar office**. Due to manual processing, lack of transparency, and inefficient communication, the process often takes several weeks or even months.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.3.0",
+    "nodemon": "^3.1.14"
+  }
+}

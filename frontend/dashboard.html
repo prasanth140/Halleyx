@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen | SmartPatta Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg: #0f172a;
+            --sidebar: #1e293b;
+            --card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; }
+
+        .sidebar { width: 260px; height: 100vh; background: var(--sidebar); border-right: 1px solid var(--border); position: fixed; display: flex; flex-direction: column; }
+        .logo { padding: 2.5rem; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .nav-links { flex: 1; padding: 1rem; }
+        .nav-item { display: flex; align-items: center; padding: 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; transition: var(--transition); }
+        .nav-item:hover, .nav-item.active { background: var(--primary); color: white; transform: translateX(5px); }
+        .nav-item i { width: 30px; font-size: 1.2rem; }
+
+        .main { margin-left: 260px; flex: 1; min-height: 100vh; padding: 2.5rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+
+        .apply-btn { padding: 0.8rem 2rem; background: var(--primary); border: none; border-radius: 50px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .apply-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-box { background: var(--card); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); }
+        .stat-box h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .stat-box p { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+
+        .table-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 1.2rem; background: rgba(0,0,0,0.2); color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 1.2rem; border-bottom: 1px solid var(--border); }
+
+        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .status-completed { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); width: 600px; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border); position: relative; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); }
+        .form-group input, .form-group select { width: 100%; padding: 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: white; }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate { animation: slideUp 0.5s ease-out; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-seedling"></i> SmartPatta</div>
+        <nav class="nav-links">
+            <a href="/dashboard.html" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="/tracker.html" class="nav-item"><i class="fas fa-map-marker-alt"></i> My Applications</a>
+            <a href="/complaint.html" class="nav-item"><i class="fas fa-headset"></i> Helpdesk</a>
+            <a href="/documents.html" class="nav-item"><i class="fas fa-file-download"></i> Documents</a>
+            <a href="#" class="nav-item" style="margin-top: auto;" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main animate">
+        <div class="header">
+            <div>
+                <h1 id="welcomeUser">Welcome, Citizen</h1>
+                <p style="color: var(--text-muted);">Manage your rural land applications</p>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button class="apply-btn" onclick="openModal()"><i class="fas fa-plus"></i> New Application</button>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-box"><p>Applications</p><h3>03</h3></div>
+            <div class="stat-box"><p>Pending</p><h3 style="color: #f59e0b;">02</h3></div>
+            <div class="stat-box"><p>Approved</p><h3 style="color: #10b981;">01</h3></div>
+        </div>
+
+        <div class="table-card">
+            <div style="padding: 1.5rem; display: flex; justify-content: space-between;">
+                <h3>Case Summary</h3>
+                <span id="appCount" style="color: var(--primary); font-weight: 600;">Loading...</span>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>App ID</th><th>Survey No</th><th>District / Village</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="app-body">
+                    <tr><td colspan="5" style="text-align: center;">Fetching latest applications...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="modal" id="applyModal">
+        <div class="modal-content" style="width: 700px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>Apply for Digital Patta</h2>
+                <i class="fas fa-times" onclick="closeModal()" style="cursor: pointer; color: var(--text-muted);"></i>
+            </div>
+            <form id="pattaForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Survey Number</label>
+                        <input type="text" id="formSurvey" placeholder="e.g. 201/2A" required>
+                    </div>
+                    <div class="form-group">
+                        <label>District</label>
+                        <select id="formDistrict" required>
+                            <option value="">Select District</option>
+                            <option>Ariyalur</option><option>Chengalpattu</option><option>Chennai</option><option>Coimbatore</option>
+                            <option>Cuddalore</option><option>Dharmapuri</option><option>Dindigul</option><option>Erode</option>
+                            <option>Kallakurichi</option><option>Kancheepuram</option><option>Karur</option><option>Krishnagiri</option>
+                            <option>Madurai</option><option>Mayiladuthurai</option><option>Nagapattinam</option><option>Namakkal</option>
+                            <option>Nilgiris</option><option>Perambalur</option><option>Pudukkottai</option><option>Ramanathapuram</option>
+                            <option>Ranipet</option><option>Salem</option><option>Sivaganga</option><option>Tenkasi</option>
+                            <option>Thanjavur</option><option>Theni</option><option>Thoothukudi</option><option>Tiruchirappalli</option>
+                            <option>Tirunelveli</option><option>Tirupathur</option><option>Tiruppur</option><option>Tiruvallur</option>
+                            <option>Tiruvannamalai</option><option>Tiruvarur</option><option>Vellore</option><option>Viluppuram</option>
+                            <option>Virudhunagar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Village Name</label>
+                    <input type="text" id="formVillage" placeholder="e.g. Aruppukottai East" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>Land Area</label>
+                        <input type="number" id="formArea" step="0.01" placeholder="e.g. 4.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit</label>
+                        <select id="formUnit">
+                            <option>Acres</option>
+                            <option>Cents</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Geo-Location (Optional)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="formGeo" placeholder="Auto-captured coordinates" readonly style="background: rgba(0,0,0,0.2);">
+                        <button type="button" class="apply-btn" style="padding: 0.8rem; border-radius: 10px;" onclick="getGeoLocation()">
+                            <i class="fas fa-location-crosshairs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Land Document (PDF/JPG)</label>
+                    <input type="file" id="formFile" style="padding: 0.5rem; background: transparent; border: 1px dashed var(--border);">
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="apply-btn" style="background:#334155; flex: 1;" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="apply-btn" style="flex: 2;">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allApps = [];
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+        
+        document.getElementById('welcomeUser').innerText = `Welcome, ${localStorage.getItem('name') || 'Citizen'}`;
+
+        document.getElementById('logoutBtn').onclick = (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        };
+
+        const API_URL = '/api';
+        function openModal() { document.getElementById('applyModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('applyModal').style.display = 'none'; }
+
+        function getGeoLocation() {
+            if ("geolocation" in navigator) {
+                document.getElementById('formGeo').value = "Locating...";
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+                    document.getElementById('formGeo').value = coords;
+                    document.getElementById('formGeo').dataset.lat = pos.coords.latitude;
+                    document.getElementById('formGeo').dataset.lng = pos.coords.longitude;
+                }, err => {
+                    alert("Location access denied.");
+                    document.getElementById('formGeo').value = "Manual Entry Required";
+                });
+            }
+        }
+
+        async function loadApplications() {
+            try {
+                const res = await fetch(`${API_URL}/applications`);
+                if (!res.ok) throw new Error('Failed');
+                allApps = await res.json();
+                renderApps(allApps);
+            } catch (err) { console.log('API Offline'); }
+        }
+
+        function renderApps(apps) {
+            const tbody = document.getElementById('app-body');
+            document.getElementById('appCount').innerText = `${apps.length} Files Found`;
+            
+            if (apps && apps.length > 0) {
+                tbody.innerHTML = apps.map(app => `
+                    <tr>
+                        <td><span style="font-family: monospace; color: var(--text-muted);">#${app._id.slice(-6)}</span></td>
+                        <td><b>${app.survey_number}</b></td>
+                        <td>${app.district || 'N/A'} - ${app.village}</td>
+                        <td><span class="status-pill ${app.status === 'completed' ? 'status-completed' : 'status-pending'}">${app.status.toUpperCase()}</span></td>
+                        <td>
+                            <a href="/tracker.html?id=${app._id}" style="color: var(--primary); text-decoration: none;"><i class="fas fa-eye"></i> Track</a>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No matching records found.</td></tr>`;
+            }
+        }
+
+        function searchApps() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allApps.filter(a => 
+                a._id.toLowerCase().includes(q) || 
+                a.survey_number.toLowerCase().includes(q) ||
+                a.village.toLowerCase().includes(q)
+            );
+            renderApps(filtered);
+        }
+
+        document.getElementById('pattaForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const geo = document.getElementById('formGeo');
+            const fileInput = document.getElementById('formFile');
+            const formData = {
+                survey_number: document.getElementById('formSurvey').value,
+                land_area: parseFloat(document.getElementById('formArea').value),
+                land_unit: document.getElementById('formUnit').value,
+                village: document.getElementById('formVillage').value,
+                district: document.getElementById('formDistrict').value,
+                document_name: fileInput.files[0] ? fileInput.files[0].name : "Standard_Deed.pdf",
+                geo_location: {
+                    lat: parseFloat(geo.dataset.lat || 0),
+                    lng: parseFloat(geo.dataset.lng || 0)
+                }
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/applications`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                if (res.ok) {
+                    alert('Success! Rule Engine has calculated the route for your new application.');
+                    closeModal();
+                    loadApplications();
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        }
+
+        window.onload = loadApplications;
+    </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Workflow Engine Designer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --accent: #6366f1;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --sidebar: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        .workflow-sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh; position: fixed; }
+        .workflow-main { flex: 1; display: flex; flex-direction: column; margin-left: 260px; height: 100vh; }
+        
+        .nav-links { padding: 1rem; flex: 1; }
+        .nav-item { display: flex; align-items: center; padding: 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); }
+        .nav-item i { width: 30px; }
+
+        /* Workspace Grid */
+        .workspace { padding: 3rem; overflow-y: auto; flex: 1; }
+        .card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 2rem; margin-bottom: 2rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        .form-control { width: 100%; padding: 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: white; border: 1px solid var(--border); outline: none; }
+        .form-control:focus { border-color: var(--accent); }
+
+        /* Rules Table */
+        .rule-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .rule-table th { text-align: left; padding: 1rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        .rule-table td { padding: 1.2rem 1rem; border-bottom: 1px solid var(--border); }
+        .condition-block { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); background: rgba(99, 102, 241, 0.1); padding: 4px 10px; border-radius: 6px; }
+
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: white; }
+
+        .drag-handle { cursor: grab; color: var(--text-muted); margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+    <aside class="workflow-sidebar">
+        <div style="padding: 2rem; border-bottom: 1px solid var(--border);">
+            <h2 style="color: var(--primary);">GovPortal 🛠️</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); padding: 5px 0;">Configuring: Rural Patta Flow</p>
+        </div>
+        <nav class="nav-links">
+            <a href="/officer-dashboard.html" class="nav-item"><i class="fas fa-inbox"></i> Inbox</a>
+            <a href="/analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics</a>
+            <a href="/logs.html" class="nav-item"><i class="fas fa-history"></i> Audit Logs</a>
+            <a href="/admin-editor.html" class="nav-item active"><i class="fas fa-cogs"></i> Design Flow</a>
+            <a href="#" id="logoutBtn" class="nav-item" style="margin-top: 15rem;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </nav>
+    </aside>
+
+    <main class="workflow-main">
+        <header class="header">
+            <h3><i class="fas fa-microchip"></i> Workflow Designer</h3>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-outline" onclick="location.href='/officer-dashboard.html'">Back</button>
+                <button class="btn btn-primary"><i class="fas fa-save"></i> Publish Flow</button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <div class="card">
+                <h3 style="margin-bottom: 1.5rem;">General Properties</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="form-group">
+                        <label>Display Name</label>
+                        <input type="text" class="form-control" value="VAO Verification">
+                    </div>
+                    <div class="form-group">
+                        <label>Assignee Role</label>
+                        <select class="form-control">
+                            <option>Village Administrative Officer</option>
+                            <option>Zonal Surveyor</option>
+                            <option>Tahsildar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Instructions to Officer</label>
+                    <textarea class="form-control" style="height: 80px;">Verify identity and cross-reference with land record base before field visit.</textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Routing Rules (Rule Engine)</h3>
+                    <button class="btn btn-outline"><i class="fas fa-plus"></i> New Rule</button>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Rules are evaluated in priority order. If a citizen's application matches the condition, the flow moves to the defined Next Step.</p>
+                
+                <table class="rule-table">
+                    <thead>
+                        <tr>
+                            <th width="80">Priority</th>
+                            <th>Condition (JS Expression)</th>
+                            <th>Next Step Target</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><span class="condition-block">application.land_area > 5</span></td>
+                            <td><i class="fas fa-level-down-alt fa-rotate-270" style="color: var(--primary);"></i> Special Surveyor</td>
+                            <td><i class="fas fa-edit" style="cursor: pointer;"></i></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><span class="condition-block">DEFAULT</span></td>
+                            <td><i class="fas fa-level-down-alt fa-rotate-270" style="color: var(--primary);"></i> Standard Surveyor</td>
+                            <td><i class="fas fa-edit" style="cursor: pointer;"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Input Schema (JSON)</h3>
+                <br>
+                <pre style="background: var(--bg); padding: 1.5rem; border-radius: 12px; font-family: 'JetBrains Mono'; font-size: 0.9rem; color: #fbbf24; border: 1px solid var(--border);">
+{
+  "survey_number": { "type": "string", "required": true },
+  "land_area": { "type": "number", "required": true },
+  "document_proof": { "type": "file", "allowed": ["pdf", "jpg"] }
+}
+                </pre>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Admin/Officer Auth
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (!token || (role !== 'admin' && role !== 'officer')) {
+            window.location.href = '/login.html';
+        }
+
+        document.getElementById('logoutBtn').onclick = (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/login.html';
+        };
+    </script>
+</body>
+</html>

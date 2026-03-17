@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | SmartPatta Governance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --secondary: #6366f1;
+            --bg: #0b0f19;
+            --card: #161e2d;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.02);
+        }
+
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; overflow-x: hidden; }
+
+        /* Premium Sidebar */
+        .sidebar { width: 260px; height: 100vh; background: #080d16; border-right: 1px solid var(--border); position: fixed; }
+        .logo { padding: 2.5rem; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .nav-links { padding: 1rem; }
+        .nav-item { display: flex; align-items: center; padding: 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2); }
+        .nav-item i { width: 30px; }
+
+        .main { margin-left: 260px; flex: 1; padding: 3rem; }
+        .header { margin-bottom: 3rem; }
+
+        /* Premium Glass Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+        .stat-card { background: var(--card); padding: 2rem; border-radius: 24px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+        .stat-card span { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card h2 { font-size: 2.2rem; margin-top: 5px; }
+        .stat-card .trend { font-size: 0.8rem; margin-top: 10px; display: flex; align-items: center; gap: 5px; }
+        .trend.up { color: var(--primary); }
+
+        .charts-container { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-top: -1rem; }
+        .chart-card { background: var(--card); padding: 1.5rem; border-radius: 24px; border: 1px solid var(--border); width: 340px; display: flex; flex-direction: column; align-items: center; }
+        .chart-card h3 { margin-bottom: 2rem; font-size: 1rem; color: var(--text-muted); width: 100%; text-align: center; font-weight: 500; }
+        .circle-wrap { width: 220px; height: 220px; position: relative; display: flex; align-items: center; justify-content: center; }
+        canvas { width: 100% !important; height: 100% !important; }
+
+        /* Tables & Lists */
+        .list-section { margin-top: 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .modern-list { background: var(--card); padding: 2.5rem; border-radius: 30px; border: 1px solid var(--border); }
+        
+        .list-item { display: flex; align-items: center; gap: 1.5rem; padding: 1.2rem 0; border-bottom: 1px solid var(--border); }
+        .list-item:last-child { border: none; }
+        .icon-box { width: 50px; height: 50px; border-radius: 16px; background: var(--glass); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate { animation: fadeInUp 0.6s ease-out; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-landmark"></i> GovPortal 🧑‍💼</div>
+        <nav class="nav-links">
+            <a href="/officer-dashboard.html" class="nav-item"><i class="fas fa-inbox"></i> Inbox</a>
+            <a href="/analytics.html" class="nav-item active"><i class="fas fa-chart-pie"></i> Analytics</a>
+            <a href="/logs.html" class="nav-item"><i class="fas fa-history"></i> Audit Logs</a>
+            <a href="/admin-editor.html" class="nav-item"><i class="fas fa-cogs"></i> Design Flow</a>
+            <a href="#" class="nav-item" id="logoutBtn" style="margin-top: 15rem; border-top: 1px solid var(--border);"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </nav>
+    </aside>
+
+    <main class="main animate">
+        <div class="header">
+            <span style="color: var(--primary); font-weight: 600;">Governance Logic v3.0</span>
+            <h1 style="font-size: 2.5rem; margin-top: 0.5rem;">Visual Analytics 🧑‍💼</h1>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>Resolved Progress</span>
+                <h2 id="totalApps">0</h2>
+                <div class="trend up"><i class="fas fa-check-circle"></i> Social Audit Pass</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--secondary);">
+                <span>Wait Time (Avg)</span>
+                <h2>4.8 Days</h2>
+                <div class="trend" style="color: var(--secondary);"><i class="fas fa-clock"></i> Below SLA</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+                <span>Active Workflows</span>
+                <h2 id="activeApps">0</h2>
+                <div class="trend" style="color: #f59e0b;"><i class="fas fa-spinner fa-spin"></i> Real-time Logic</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #ef4444;">
+                <span>Pending Alerts</span>
+                <h2 id="pendingApps">0</h2>
+                <div class="trend" style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Verification Due</div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>Workflow Integrity (Pie)</h3>
+                <div class="circle-wrap">
+                    <canvas id="velocityChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>Regional Accuracy</h3>
+                <div class="circle-wrap">
+                    <canvas id="distChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="list-section">
+            <div class="modern-list">
+                <h3>Top Performing Officers</h3>
+                <br>
+                <div class="list-item">
+                    <div class="icon-box" style="color: var(--primary);"><i class="fas fa-award"></i></div>
+                    <div style="flex: 1;">
+                        <p><b>Officer Arul Kumar</b></p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">VAO - Madurai Central • 99.2% Accuracy</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="icon-box" style="color: var(--secondary);"><i class="fas fa-award"></i></div>
+                    <div style="flex: 1;">
+                        <p><b>Officer Meena S.</b></p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Surveyor - Aruppukottai • 4.2 Days Avg</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modern-list">
+                <h3>Recent System Events</h3>
+                <br>
+                <div class="list-item">
+                    <div class="icon-box"><i class="fas fa-robot"></i></div>
+                    <div style="flex: 1;">
+                        <p><b>Rule Engine Update</b></p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Optimized land_area threshold rules</p>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="icon-box"><i class="fas fa-lock"></i></div>
+                    <div style="flex: 1;">
+                        <p><b>Audit Hash Verified</b></p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Blockchain record synchronization successful</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = '/api';
+
+        document.getElementById('logoutBtn').onclick = (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/login.html';
+        };
+
+        async function initDashboard() {
+            try {
+                const res = await fetch(`${API_URL}/stats`);
+                const stats = await res.json();
+                
+                document.getElementById('totalApps').innerText = stats.completed || 0;
+                document.getElementById('activeApps').innerText = stats.active || 0;
+                document.getElementById('pendingApps').innerText = stats.pending || 0;
+
+                // Pie Chart: Workflow Health
+                const velocityCtx = document.getElementById('velocityChart').getContext('2d');
+                new Chart(velocityCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Completed', 'Pending VAO', 'Survey Stage', 'Final Review'],
+                        datasets: [{
+                            data: [stats.completed, stats.pending, stats.survey, stats.vao],
+                            backgroundColor: ['#10b981', '#ef4444', '#6366f1', '#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: '#161e2d'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } }
+                    }
+                });
+
+                // Doughnut: Regional
+                const distCtx = document.getElementById('distChart').getContext('2d');
+                new Chart(distCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['North', 'South', 'East', 'West'],
+                        datasets: [{
+                            data: [40, 30, 20, 10],
+                            backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#3b82f6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } },
+                        cutout: '70%'
+                    }
+                });
+            } catch (err) { console.log('Analytics Error'); }
+        }
+
+        window.onload = initDashboard;
+    </script>
+</body>
+</html>

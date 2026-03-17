@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints | SmartPatta Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+
+        .form-container { background: var(--card); max-width: 600px; width: 100%; border-radius: 24px; border: 1px solid var(--border); padding: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+        
+        h2 { margin-bottom: 1rem; }
+        p { color: var(--text-muted); margin-bottom: 2rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        .form-control { width: 100%; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
+        .form-control:focus { border-color: var(--primary); }
+
+        .btn { width: 100%; padding: 1rem; background: var(--primary); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 1rem; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
+
+        .back-link { display: block; text-align: center; margin-top: 1.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+        .back-link:hover { color: var(--text-main); }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <div class="logo"><i class="fas fa-seedling"></i> SmartPatta Helpdesk</div>
+        <h2>Grievance Redressal</h2>
+        <p>Is your Patta application delayed? Report it directly to the District Collector's audit engine.</p>
+
+        <form onsubmit="event.preventDefault(); const d = new Date().toLocaleDateString(); alert(`Complaint registered successfully on ${d}! Ticket ID: #CMP-${Math.floor(Math.random()*9000)+1000}. We will audit the delay immediately.`); location.href='/dashboard.html';">
+            <div class="form-group">
+                <label>Application ID (e.g. APP-8821)</label>
+                <input type="text" class="form-control" placeholder="Enter your tracking ID" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Category of Issue</label>
+                <select class="form-control" required>
+                    <option value="">Select Category</option>
+                    <option>Process Delay (> 15 Days)</option>
+                    <option>Incorrect Survey Data</option>
+                    <option>Officer Misconduct/Bribery</option>
+                    <option>Missing Documents</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Detailed Complaint</label>
+                <textarea class="form-control" style="height: 120px;" placeholder="Describe the issue in detail..."></textarea>
+            </div>
+
+            <button type="submit" class="btn">Register Complaint</button>
+        </form>
+
+        <a href="/dashboard.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+
+</body>
+</html>

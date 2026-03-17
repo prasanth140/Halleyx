@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Patta | Rural Governance Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981; /* Rural Green */
+            --accent: #f59e0b;  /* Golden Harvest */
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1500382017468-9049fee790ce?auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+
+        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; line-height: 1.1; }
+        .hero h1 span { color: var(--primary); }
+        .hero p { font-size: 1.25rem; color: #94a3b8; max-width: 700px; margin-bottom: 2.5rem; }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; border: none; }
+        .btn-primary:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
+
+        .stats-row {
+            display: flex;
+            gap: 4rem;
+            margin-top: 4rem;
+        }
+        .stat-item h2 { font-size: 2.5rem; color: var(--accent); }
+        .stat-item p { color: #64748b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .features-grid { padding: 6rem 4rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .feature-card { background: var(--card); padding: 3rem; border-radius: 20px; border: 1px solid #334155; transition: 0.3s; }
+        .feature-card:hover { border-color: var(--primary); transform: translateY(-10px); }
+        .feature-card i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1.5rem; }
+        .feature-card h3 { margin-bottom: 1rem; }
+        .feature-card p { color: #94a3b8; line-height: 1.6; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .features-grid { grid-template-columns: 1fr; padding: 2rem; }
+            .navbar { padding: 1rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><i class="fas fa-seedling"></i> SmartPatta</div>
+        <div style="display: flex; gap: 2rem;">
+            <a href="/login.html" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Login</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Transforming <span>Rural Governance</span><br>with Digital Workflows</h1>
+        <p>A transparent, rule-based engine to accelerate Land Patta approvals for village citizens. No more queues, just seamless digital progress.</p>
+        
+        <div style="display: flex; gap: 1.5rem; flex-direction: column; align-items: center; width: 100%; max-width: 600px;">
+            <div style="position: relative; width: 100%;">
+                <i class="fas fa-search" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--primary);"></i>
+                <input type="text" id="homeSearch" placeholder="Search Survey Number (e.g. 201/2A)..." 
+                       style="width: 100%; padding: 1.2rem 1.2rem 1.2rem 3.5rem; border-radius: 50px; border: 1px solid #334155; background: var(--card); color: white; font-size: 1.1rem; outline: none; transition: 0.3s;"
+                       onkeyup="if(event.key === 'Enter') searchPatta()">
+            </div>
+            <div style="display: flex; gap: 1.5rem;">
+                <a href="login.html" class="btn btn-primary">
+                    Apply for Patta <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="#features" class="btn" style="border: 2px solid #334155;">How it Works</a>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-item">
+                <h2 id="statTotal">0</h2>
+                <p>Applications Processed</p>
+            </div>
+            <div class="stat-item">
+                <h2 id="statCompleted">0</h2>
+                <p>Digital Pattas Issued</p>
+            </div>
+            <div class="stat-item">
+                <h2 id="statPending">0</h2>
+                <p>In-Progress Audits</p>
+            </div>
+        </div>
+    </header>
+
+    <script>
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const stats = await res.json();
+                document.getElementById('statTotal').innerText = stats.total + '+';
+                document.getElementById('statCompleted').innerText = stats.completed;
+                document.getElementById('statPending').innerText = stats.pending;
+            } catch (err) { console.log('Stats offline'); }
+        }
+
+        async function searchPatta() {
+            const btn = document.querySelector('.btn-primary');
+            const originalText = btn.innerHTML;
+            const query = document.getElementById('homeSearch').value.trim();
+            if(!query) return;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+
+            try {
+                const res = await fetch('/api/applications');
+                const apps = await res.json();
+                // Find the latest one matching survey
+                const found = apps.find(a => a.survey_number === query || a._id.includes(query));
+                if(found) {
+                    window.location.href = `/tracker.html?id=${found._id}`;
+                } else {
+                    alert('Survey Number not found in our digital records. Please check and try again.');
+                    btn.innerHTML = originalText;
+                }
+            } catch (err) { 
+                alert('Service unreachable'); 
+                btn.innerHTML = originalText;
+            }
+        }
+
+        window.onload = fetchStats;
+    </script>
+
+    <section class="features-grid">
+        <div class="feature-card">
+            <i class="fas fa-bolt"></i>
+            <h3>Automated Routing</h3>
+            <p>Smart rules automatically send your application to the right VAO or Surveyor based on land area and location.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-map-marked-alt"></i>
+            <h3>GIS Integration</h3>
+            <p>View land boundaries and survey maps directly in the portal using modern maps technology.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Audit Transparency</h3>
+            <p>Every decision by an officer is logged with a timestamp and the rule evaluated, ensuring zero corruption.</p>
+        </div>
+    </section>
+
+    <footer style="padding: 4rem; text-align: center; border-top: 1px solid #334155; color: #64748b;">
+        <p>&copy; 2026 Smart Rural Land Governance System. Developed for Social Impact.</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowEngine | Execution Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; }
+
+        /* Sidebar Mirror */
+        .sidebar { width: 260px; height: 100vh; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; }
+        .logo { padding: 2rem; display: flex; align-items: center; gap: 12px; font-size: 1.5rem; color: var(--primary); font-weight: 700; }
+        .nav-links { padding: 1rem; }
+        .nav-item { display: flex; align-items: center; padding: 0.8rem 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .nav-item i { width: 24px; margin-right: 10px; }
+
+        .main-content { margin-left: 260px; flex: 1; padding: 2rem; }
+
+        /* Tracking UI */
+        .execution-header { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .status-badge { padding: 6px 16px; border-radius: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 0.875rem; }
+        .status-running { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+
+        .tracking-grid { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
+
+        /* Timeline */
+        .timeline-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; position: relative; }
+        .timeline { position: relative; padding-left: 3rem; }
+        .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+        
+        .timeline-item { position: relative; margin-bottom: 3rem; }
+        .timeline-dot { position: absolute; left: -45px; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--bg-dark); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; z-index: 10; transition: var(--transition); }
+        
+        .timeline-item.completed .timeline-dot { border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .timeline-item.current .timeline-dot { border-color: var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); animation: pulse 2s infinite; }
+        .timeline-item.pending .timeline-dot { color: var(--text-muted); }
+
+        .timeline-content { padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; transition: var(--transition); }
+        .timeline-item.current .timeline-content { border-color: var(--warning); background: rgba(245, 158, 11, 0.05); }
+
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+
+        /* Info Panel */
+        .info-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .info-label { color: var(--text-muted); }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-project-diagram"></i> <span>FlowEngine</span></div>
+        <nav class="nav-links">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="workflows.html" class="nav-item"><i class="fas fa-route"></i> Workflows</a>
+            <a href="editor.html" class="nav-item"><i class="fas fa-edit"></i> Editor</a>
+            <a href="tracking.html" class="nav-item active"><i class="fas fa-satellite-dish"></i> Execution</a>
+            <a href="logs.html" class="nav-item"><i class="fas fa-terminal"></i> Logs</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="execution-header">
+            <div>
+                <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">EXECUTION ID: #EX-88291</p>
+                <h1>User Account Creation</h1>
+            </div>
+            <div class="status-badge status-running">
+                <i class="fas fa-spinner fa-spin"></i> RUNNING
+            </div>
+        </div>
+
+        <div class="tracking-grid">
+            <!-- Timeline Center -->
+            <div class="timeline-card">
+                <div class="timeline">
+                    <!-- Step 1 Complete -->
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot"><i class="fas fa-check"></i></div>
+                        <div class="timeline-content">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <h4>1. Data Validation</h4>
+                                <span style="font-size: 0.75rem; color: var(--success);">Completed 12m ago</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Payload validated against schema v2.1. Duration: 0.4s</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 Complete -->
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot"><i class="fas fa-check"></i></div>
+                        <div class="timeline-content">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <h4>2. Identity Verification</h4>
+                                <span style="font-size: 0.75rem; color: var(--success);">Completed 5m ago</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Auto-verified via KYC Provider A. Confidence Score: 98%</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 Current -->
+                    <div class="timeline-item current">
+                        <div class="timeline-dot"><i class="fas fa-arrow-right"></i></div>
+                        <div class="timeline-content">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <h4>3. Manual Approval <span class="badge" style="background: var(--warning); color: black; font-size: 0.6rem; padding: 2px 5px; border-radius: 4px;">ACTION REQUIRED</span></h4>
+                                <span style="font-size: 0.75rem; color: var(--warning);">Pending...</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Awaiting verification from <b>Risk Compliance Team</b>. Review high-value account request.</p>
+                            
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-success" onclick="alert('Step Approved')"><i class="fas fa-check"></i> Approve</button>
+                                <button class="btn btn-danger" onclick="alert('Step Rejected')"><i class="fas fa-times"></i> Reject</button>
+                                <button class="btn btn-outline">Details</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 Pending -->
+                    <div class="timeline-item pending">
+                        <div class="timeline-dot">4</div>
+                        <div class="timeline-content">
+                            <h4>4. Provisioning Service</h4>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">Queued... will trigger upon approval of Step 3.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Panels -->
+            <div>
+                <div class="info-card">
+                    <h3 style="margin-bottom: 1.5rem;">Execution Info</h3>
+                    <div class="info-row">
+                        <span class="info-label">Workflow</span>
+                        <span>Account Creator V1</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Started By</span>
+                        <span>API Gateway</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Start Time</span>
+                        <span>Oct 12, 14:30:22</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Total Duration</span>
+                        <span>12m 44s</span>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 2rem;">
+                        <button class="btn btn-outline" style="width: 100%; justify-content: center;"><i class="fas fa-sync"></i> Retry From Last Failed</button>
+                        <button class="btn btn-danger" style="width: 100%; justify-content: center; background: rgba(239, 68, 68, 0.1); color: var(--danger);"><i class="fas fa-ban"></i> Terminate Execution</button>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3 style="margin-bottom: 1rem;">Execution Context</h3>
+                    <pre style="background: var(--bg-dark); padding: 1rem; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; color: var(--primary);">
+{
+  "user_id": "USR-9921",
+  "tier": "Premium",
+  "region": "NA",
+  "risk_score": 0.12,
+  "requires_manual": true
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

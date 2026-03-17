@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | SmartPatta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+        .auth-card { background: var(--card); width: 450px; padding: 3rem; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        h2 { text-align: center; margin-bottom: 2rem; }
+        
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 0.85rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.9rem; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
+        .form-group input:focus { border-color: var(--primary); }
+
+        .btn { width: 100%; padding: 1rem; background: var(--primary); border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 1rem; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
+
+        .switch { text-align: center; margin-top: 2rem; font-size: 0.9rem; color: var(--text-muted); }
+        .switch a { color: var(--primary); text-decoration: none; }
+        
+        #error { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; display: none; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="logo"><i class="fas fa-seedling"></i> SmartPatta</div>
+        <h2>Create Account</h2>
+
+        <div id="error"></div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" placeholder="name@domain.com" required>
+            </div>
+            <div class="form-group">
+                <label>Register As</label>
+                <select required>
+                    <option value="citizen">Citizen (Apply for Patta) 🏠</option>
+                    <option value="officer">Government Officer (Review Files) 🧑‍💼</option>
+                    <option value="admin">System Admin (Workflow Designer) 🛠️</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" placeholder="Min. 8 characters" required>
+            </div>
+            <button type="submit" class="btn">Register Now</button>
+        </form>
+
+        <div class="switch">
+            Already have an account? <a href="login.html">Sign In</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('signupForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const name = e.target[0].value;
+            const email = e.target[1].value;
+            const role = e.target[2].value;
+            const password = e.target[3].value;
+            const errorDiv = document.getElementById('error');
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, role, password })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert('Registration Successful! Please Login.');
+                    window.location.href = 'login.html';
+                } else {
+                    errorDiv.innerText = data.error;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.innerText = 'Registration failed';
+                errorDiv.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowEngine | Workflows</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; }
+
+        /* Sidebar Copy-Paste */
+        .sidebar { width: 260px; height: 100vh; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; left: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; transition: var(--transition); }
+        .logo { padding: 2rem; display: flex; align-items: center; gap: 12px; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .nav-links { flex: 1; padding: 0 1rem; }
+        .nav-item { display: flex; align-items: center; padding: 0.875rem 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; transition: var(--transition); }
+        .nav-item i { width: 24px; font-size: 1.25rem; margin-right: 12px; }
+        .nav-item:hover, .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+
+        .main-content { margin-left: 260px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+        .navbar { height: 70px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 900; }
+
+        .container { padding: 2rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); border: none; display: flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); }
+
+        /* Table Card */
+        .table-card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+        .table-toolbar { padding: 1.5rem; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        .search-box { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 8px; width: 300px; }
+        .search-box input { background: transparent; border: none; color: white; outline: none; width: 100%; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 1rem 1.5rem; color: var(--text-muted); font-size: 0.875rem; border-bottom: 1px solid var(--border); }
+        td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .status-pill { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .pill-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .pill-draft { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        
+        .actions { display: flex; gap: 8px; }
+        .action-btn { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: var(--glass); cursor: pointer; border: 1px solid var(--border); transition: var(--transition); color: var(--text-muted); }
+        .action-btn:hover { color: var(--text-main); border-color: var(--primary); }
+
+        .pagination { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.875rem; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal { background: var(--card-bg); width: 500px; border-radius: 16px; border: 1px solid var(--border); padding: 2rem; position: relative; }
+        .close-modal { position: absolute; top: 1.5rem; right: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: white; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 0; padding: 0; overflow: hidden; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-project-diagram"></i>
+            <span>FlowEngine</span>
+        </div>
+        <nav class="nav-links">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="workflows.html" class="nav-item active">
+                <i class="fas fa-route"></i>
+                <span>Workflows</span>
+            </a>
+            <a href="editor.html" class="nav-item">
+                <i class="fas fa-edit"></i>
+                <span>Editor</span>
+            </a>
+            <a href="tracking.html" class="nav-item">
+                <i class="fas fa-satellite-dish"></i>
+                <span>Execution Tracking</span>
+            </a>
+            <a href="logs.html" class="nav-item">
+                <i class="fas fa-terminal"></i>
+                <span>Logs</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="navbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search workflows...">
+            </div>
+            <div class="user-profile">
+                <div class="avatar" style="width: 35px; height: 35px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">JD</div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="page-header">
+                <div>
+                    <h1>Workflows</h1>
+                    <p style="color: var(--text-muted);">Manage and monitor your automation blueprints</p>
+                </div>
+                <button class="btn btn-primary" onclick="showModal()">
+                    <i class="fas fa-plus"></i> Create Workflow
+                </button>
+            </div>
+
+            <div class="table-card">
+                <div class="table-toolbar">
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-outline">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-sort"></i> Sort
+                        </button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Workflow Name</th>
+                            <th>Version</th>
+                            <th>Status</th>
+                            <th>Last Modified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workflow-list">
+                        <!-- Data semi-dynamically -->
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <span>Showing 1-5 of 24 workflows</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem;">Prev</button>
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; background: var(--primary);">1</button>
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem;">2</button>
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem;">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="workflowModal">
+        <div class="modal">
+            <i class="fas fa-times close-modal" onclick="hideModal()"></i>
+            <h2>New Workflow</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Define a new automation process.</p>
+            <form>
+                <div class="form-group">
+                    <label>Workflow Name</label>
+                    <input type="text" placeholder="e.g. Employee Onboarding">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select>
+                        <option>Human Resources</option>
+                        <option>Finance</option>
+                        <option>DevOps</option>
+                        <option>Sales</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" class="btn btn-outline" onclick="hideModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary">Create Workflow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const workflows = [
+            { id: 'WF-001', name: 'Customer Verification', version: '1.2.0', status: 'Active', modified: '2 hours ago' },
+            { id: 'WF-002', name: 'Invoice Processing', version: '2.0.4', status: 'Active', modified: 'Yesterday' },
+            { id: 'WF-003', name: 'Data Pipeline Sync', version: '0.8.2', status: 'Draft', modified: '3 days ago' },
+            { id: 'WF-004', name: 'User Onboarding', version: '1.0.0', status: 'Active', modified: '1 week ago' },
+            { id: 'WF-005', name: 'System Maintenance', version: '3.1.2', status: 'Active', modified: '2 weeks ago' }
+        ];
+
+        function renderWorkflows() {
+            const list = document.getElementById('workflow-list');
+            list.innerHTML = workflows.map(wf => `
+                <tr>
+                    <td style="color: var(--text-muted); font-size: 0.8rem;">${wf.id}</td>
+                    <td><b>${wf.name}</b></td>
+                    <td>${wf.version}</td>
+                    <td><span class="status-pill ${wf.status === 'Active' ? 'pill-active' : 'pill-draft'}">${wf.status}</span></td>
+                    <td style="color: var(--text-muted);">${wf.modified}</td>
+                    <td>
+                        <div class="actions">
+                            <div class="action-btn" title="Edit" onclick="location.href='editor.html'"><i class="fas fa-edit"></i></div>
+                            <div class="action-btn" title="Execute" onclick="location.href='tracking.html'"><i class="fas fa-play"></i></div>
+                            <div class="action-btn" title="Delete"><i class="fas fa-trash"></i></div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showModal() { document.getElementById('workflowModal').style.display = 'flex'; }
+        function hideModal() { document.getElementById('workflowModal').style.display = 'none'; }
+
+        window.onload = renderWorkflows;
+    </script>
+</body>
+</html>

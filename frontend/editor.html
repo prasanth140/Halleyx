@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowEngine | Workflow Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        .editor-sidebar { width: 300px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .editor-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #0b1120; }
+        .editor-header { height: 60px; background: var(--card-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 100; }
+        
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
+        .step-list { flex: 1; padding: 1rem; overflow-y: auto; }
+        .step-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; cursor: pointer; transition: var(--transition); position: relative; }
+        .step-card:hover { border-color: var(--primary); transform: translateX(5px); }
+        .step-card.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+        .step-num { position: absolute; left: -10px; top: 10px; width: 24px; height: 24px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; }
+        
+        .form-section { padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%; }
+        .section-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; }
+        
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        .form-control { width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: white; margin-bottom: 1rem; outline: none; transition: var(--transition); }
+        .form-control:focus { border-color: var(--primary); }
+        
+        .schema-row { display: flex; gap: 1rem; margin-bottom: 0.5rem; }
+        
+        .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; background: var(--border); color: var(--text-muted); }
+
+        .rules-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .rules-table th { text-align: left; color: var(--text-muted); padding: 0.5rem; border-bottom: 1px solid var(--border); }
+        .rules-table td { padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--border); }
+
+        /* Animation */
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- Left Sidebar: Steps Navigation -->
+    <aside class="editor-sidebar">
+        <div class="sidebar-header">
+            <h3 style="margin-bottom: 0.5rem;">Steps</h3>
+            <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="addStep()">
+                <i class="fas fa-plus"></i> Add New Step
+            </button>
+        </div>
+        <div class="step-list" id="stepList">
+            <!-- Dynamic Steps -->
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <div class="editor-main">
+        <header class="editor-header">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="workflows.html" style="color: var(--text-muted);"><i class="fas fa-arrow-left"></i></a>
+                <h2 id="wf-title-display">New Workflow</h2>
+                <span class="badge">V 1.0.0</span>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-outline">Discard</button>
+                <button class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            </div>
+        </header>
+
+        <div class="form-section">
+            <!-- Config Section -->
+            <div class="section-card fade-in">
+                <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-cog" style="color: var(--primary);"></i> General Configuration</h3>
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Workflow Name</label>
+                    <input type="text" class="form-control" id="wfName" value="Customer Verification" oninput="updateTitle()">
+                </div>
+                
+                <h4 style="margin: 1.5rem 0 1rem; color: var(--text-muted);">Input Schema</h4>
+                <div id="schema-container">
+                    <div class="schema-row">
+                        <input type="text" class="form-control" value="customer_id" placeholder="Field Name">
+                        <select class="form-control" style="width: 150px;">
+                            <option>String</option>
+                            <option>Number</option>
+                            <option>Boolean</option>
+                        </select>
+                        <i class="fas fa-trash-alt" style="margin-top: 15px; color: var(--text-muted); cursor: pointer;"></i>
+                    </div>
+                </div>
+                <button class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="addSchemaRow()">+ Add Field</button>
+            </div>
+
+            <!-- Rules Section -->
+            <div class="section-card fade-in">
+                <h3 style="margin-bottom: 1rem;"><i class="fas fa-project-diagram" style="color: var(--primary);"></i> Routing Rules</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Define how the workflow progresses between steps.</p>
+                
+                <table class="rules-table">
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Target Step</th>
+                            <th>Priority</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rules-body">
+                        <tr>
+                            <td><span style="color: var(--success);">result == 'APPROVED'</span></td>
+                            <td>Step 2: Security Check</td>
+                            <td>1</td>
+                            <td><i class="fas fa-ellipsis-v"></i></td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: var(--danger);">result == 'REJECTED'</span></td>
+                            <td>Step 5: Notify User</td>
+                            <td>2</td>
+                            <td><i class="fas fa-ellipsis-v"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-outline" style="margin-top: 1.5rem;">+ Add Rule</button>
+            </div>
+
+            <!-- Step Editor (Modal style but inline for premium feel) -->
+            <div id="step-editor-view" class="section-card fade-in" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h3><i class="fas fa-layer-group" style="color: var(--primary);"></i> Step Editor: <span id="current-step-name">Step 1</span></h3>
+                    <button class="btn btn-danger" onclick="deleteStep()">Delete Step</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Step Name</label>
+                    <input type="text" class="form-control" id="stepNameInput">
+                </div>
+                <div class="form-group">
+                    <label>Step Type</label>
+                    <select class="form-control" id="stepTypeInput">
+                        <option value="Task">Automated Task</option>
+                        <option value="Approval">Manual Approval</option>
+                        <option value="Notification">Notification</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description / Instructions</label>
+                    <textarea class="form-control" style="height: 100px;"></textarea>
+                </div>
+                
+                <div id="type-metadata" style="padding: 1rem; background: var(--sidebar-bg); border-radius: 8px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">TYPE SPECIFIC METADATA</p>
+                    <div id="metadata-fields">
+                        <label style="font-size: 0.8rem;">Assigned Email</label>
+                        <input type="text" class="form-control" placeholder="approver@company.com">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let steps = [
+            { id: 1, name: 'Data Validation', type: 'Task' },
+            { id: 2, name: 'Risk Scoring', type: 'Task' },
+            { id: 3, name: 'Manager Approval', type: 'Approval' }
+        ];
+        let activeStepId = null;
+
+        function renderSteps() {
+            const list = document.getElementById('stepList');
+            list.innerHTML = steps.map(s => `
+                <div class="step-card ${activeStepId === s.id ? 'active' : ''}" onclick="selectStep(${s.id})">
+                    <div class="step-num">${s.id}</div>
+                    <div style="font-weight: 600;">${s.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${s.type}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectStep(id) {
+            activeStepId = id;
+            const step = steps.find(s => s.id === id);
+            document.getElementById('step-editor-view').style.display = 'block';
+            document.getElementById('current-step-name').innerText = step.name;
+            document.getElementById('stepNameInput').value = step.name;
+            document.getElementById('stepTypeInput').value = step.type;
+            renderSteps();
+            
+            // Scroll to editor
+            document.getElementById('step-editor-view').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function addStep() {
+            const newId = steps.length + 1;
+            steps.push({ id: newId, name: 'New Step ' + newId, type: 'Task' });
+            renderSteps();
+            selectStep(newId);
+        }
+
+        function addSchemaRow() {
+            const container = document.getElementById('schema-container');
+            const div = document.createElement('div');
+            div.className = 'schema-row';
+            div.innerHTML = `
+                <input type="text" class="form-control" placeholder="Field Name">
+                <select class="form-control" style="width: 150px;">
+                    <option>String</option>
+                    <option>Number</option>
+                    <option>Boolean</option>
+                </select>
+                <i class="fas fa-trash-alt" style="margin-top: 15px; color: var(--text-muted); cursor: pointer;" onclick="this.parentElement.remove()"></i>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateTitle() {
+            document.getElementById('wf-title-display').innerText = document.getElementById('wfName').value;
+        }
+
+        window.onload = renderSteps;
+    </script>
+</body>
+</html>

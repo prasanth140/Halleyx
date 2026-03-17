@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs | SmartPatta Transparency</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --sidebar: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); display: flex; }
+
+        .sidebar { width: 260px; height: 100vh; background: var(--sidebar); border-right: 1px solid var(--border); position: fixed; }
+        .logo { padding: 2.5rem; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .nav-links { padding: 1rem; }
+        .nav-item { display: flex; align-items: center; padding: 1rem; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 0.5rem; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .nav-item i { width: 30px; }
+
+        .main { margin-left: 260px; flex: 1; padding: 2.5rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+
+        .log-container { background: var(--card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        .log-header { padding: 1.5rem; background: rgba(0,0,0,0.2); display: flex; gap: 1rem; align-items: center; }
+        
+        table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+        th { text-align: left; padding: 1.2rem; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; border-bottom: 1px solid var(--border); }
+        td { padding: 1.2rem; border-bottom: 1px solid var(--border); }
+
+        .rule-eval { color: #6366f1; background: rgba(99, 102, 241, 0.1); padding: 2px 8px; border-radius: 4px; }
+        .timestamp { color: var(--text-muted); font-size: 0.75rem; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; }
+        .badge-vao { background: rgba(16, 185, 129, 0.1); color: var(--primary); }
+        .badge-sys { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        .animate { animation: fadeIn 0.5s ease-in; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-landmark"></i> GovPortal 🧑‍💼</div>
+        <nav class="nav-links">
+            <a href="/officer-dashboard.html" class="nav-item"><i class="fas fa-inbox"></i> Inbox</a>
+            <a href="/analytics.html" class="nav-item"><i class="fas fa-chart-pie"></i> Analytics</a>
+            <a href="/logs.html" class="nav-item active"><i class="fas fa-history"></i> Audit Logs</a>
+            <a href="/admin-editor.html" class="nav-item"><i class="fas fa-cogs"></i> Design Flow</a>
+            <a href="#" class="nav-item" id="logoutBtn" style="margin-top: 15rem; border-top: 1px solid var(--border);"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </nav>
+    </aside>
+
+    <main class="main animate">
+        <div class="header">
+            <div>
+                <h1>Execution Audit Trial</h1>
+                <p style="color: var(--text-muted);">Immutable logs of all workflow decisions and rule evaluations.</p>
+            </div>
+            <button style="border: 1px solid var(--border); background: transparent; padding: 0.7rem 1.5rem; border-radius: 10px; color: white; cursor: pointer;">
+                <i class="fas fa-file-export"></i> Export Audit PDF
+            </button>
+        </div>
+
+        <div class="log-container">
+            <div class="log-header">
+                <input type="text" placeholder="Filter by App ID..." style="background: var(--bg); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 8px; color: white;">
+                <select style="background: var(--bg); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 8px; color: white;">
+                    <option>All Events</option>
+                    <option>Rule Evaluation</option>
+                    <option>Officer Approval</option>
+                </select>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>App ID</th>
+                        <th>Step</th>
+                        <th>Actor</th>
+                        <th>Action / Rule Evaluated</th>
+                        <th>Next Step</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="timestamp">2026-03-17 14:15:02</td>
+                        <td><b>#PK-99120</b></td>
+                        <td>VAO_VERIFY</td>
+                        <td><span class="badge badge-vao">VAO: Kumar</span></td>
+                        <td>Manual Physical Verification Pass</td>
+                        <td>SURVEYOR_INSP</td>
+                    </tr>
+                    <tr>
+                        <td class="timestamp">2026-03-17 14:15:03</td>
+                        <td><b>#PK-99120</b></td>
+                        <td>RULE_ENGINE</td>
+                        <td><span class="badge badge-sys">SYSTEM</span></td>
+                        <td><span class="rule-eval">IF land_area > 5ac THEN Special_Surveyor</span> (Result: FALSE)</td>
+                        <td>STD_SURVEYOR</td>
+                    </tr>
+                    <tr>
+                        <td class="timestamp">2026-03-17 12:10:44</td>
+                        <td><b>#PK-99118</b></td>
+                        <td>SURVEYOR</td>
+                        <td><span class="badge badge-vao" style="color:#6366f1;">SURVEYOR: Ramesh</span></td>
+                        <td>Field boundary match confirmed</td>
+                        <td>TAHSILDAR_APP</td>
+                    </tr>
+                    <tr>
+                        <td class="timestamp">2026-03-17 10:05:21</td>
+                        <td><b>#PK-99116</b></td>
+                        <td>FINAL_APP</td>
+                        <td><span class="badge badge-vao" style="color:var(--warning);">TAHSILDAR</span></td>
+                        <td>Digital Signature Applied (e-Patta)</td>
+                        <td>COMPLETED</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('logoutBtn').onclick = (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/index.html';
+        };
+    </script>
+</body>
+</html>
